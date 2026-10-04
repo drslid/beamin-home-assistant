@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Start a local Home Assistant on http://localhost:8123 with this integration linked in.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+ha_version=2026.9.4
+config=.dev/config
+
+if [[ ! -x .venv-dev/bin/hass ]]; then
+  uv venv --allow-existing --python 3.14 .venv-dev
+  uv pip install --python .venv-dev "homeassistant==$ha_version" "segno==1.6.6"
+fi
+
+mkdir -p "$config/custom_components"
+ln -sfn "$PWD/custom_components/beamin" "$config/custom_components/beamin"
+
+if [[ ! -f "$config/configuration.yaml" ]]; then
+  cat >"$config/configuration.yaml" <<'YAML'
+# Lean development instance: add integrations here as features need them.
+frontend:
+config:
+
+logger:
+  default: info
+  logs:
+    custom_components.beamin: debug
+YAML
+fi
+
+exec .venv-dev/bin/hass --config "$config" "$@"

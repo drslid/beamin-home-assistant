@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Create the Python environment and install the test and lint tools.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+uv venv --allow-existing --python 3.14 .venv
+uv pip install --python .venv -r requirements_test.txt -r requirements_lint.txt pytest-cov

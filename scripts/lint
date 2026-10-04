@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Run the same static checks as CI.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/mypy
+for file in custom_components/beamin/frontend/*.js; do
+  node --check "$file"
+done

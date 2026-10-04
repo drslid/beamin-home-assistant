@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Run the backend tests with coverage, then the frontend string checks.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+.venv/bin/pytest --cov --cov-report=term-missing --cov-fail-under=90 "$@"
+node --test tests/js/*.test.mjs

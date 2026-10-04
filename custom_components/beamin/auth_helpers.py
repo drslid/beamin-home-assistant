@@ -236,8 +236,6 @@ class TemporarySessions:
 
     @callback
     def _schedule(self, token_id: str, delay: float) -> None:
-        if (cancel := self._cancel.pop(token_id, None)) is not None:
-            cancel()
         self._cancel[token_id] = async_call_later(
             self._hass, max(delay, 0), partial(self._async_revoke_due, token_id)
         )

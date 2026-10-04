@@ -9,7 +9,8 @@
     <title>BeamIn · Home Assistant</title>
     <link rel="icon" href="/static/icons/favicon.ico">
     <link rel="stylesheet" href="__STATIC__/beam.css">
-    <script type="module" src="__STATIC__/beam.js"></script>
+    <script defer src="__STATIC__/i18n.js"></script>
+    <script defer src="__STATIC__/beam.js"></script>
   </head>
   <body>
     <main class="card" aria-labelledby="title">
@@ -20,15 +21,21 @@
       </section>
 
       <section id="view-waiting" class="view" hidden>
-        <p class="hint" data-i18n="scan">Scan this QR code with a phone that is signed in to Home Assistant.</p>
-        <div class="qr"><img id="qr" alt="QR code" data-i18n-alt="qr_alt"></div>
-        <p class="hint" data-i18n="or_code">Or open BeamIn in Home Assistant and type this code:</p>
-        <p id="code" class="code"></p>
-        <p class="hint" data-i18n="match">Then pick this number on your phone:</p>
-        <p id="match" class="match"></p>
-        <div class="timer">
-          <progress id="progress" max="1" value="1" aria-hidden="true"></progress>
-          <span id="countdown"></span>
+        <div class="columns">
+          <div class="qr-block">
+            <p class="hint" data-i18n="scan">Scan this QR code with a phone that is signed in to Home Assistant.</p>
+            <div class="qr"><img id="qr" alt="QR code" data-i18n-alt="qr_alt"></div>
+          </div>
+          <div class="info">
+            <p class="hint" data-i18n="or_code">Or open BeamIn in Home Assistant and type this code:</p>
+            <p id="code" class="code"></p>
+            <p class="hint" data-i18n="match">Then pick this number on your phone:</p>
+            <p id="match" class="match"></p>
+            <div class="timer">
+              <progress id="progress" max="1" value="1" aria-hidden="true"></progress>
+              <span id="countdown"></span>
+            </div>
+          </div>
         </div>
         <p class="warning" data-i18n="never_share">Never send this code to anyone: only someone standing in front of this screen should approve it.</p>
       </section>

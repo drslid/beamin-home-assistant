@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "BeamIn",
+        "description": "Connectez à Home Assistant n'importe quel appareil (voiture, tablette murale, TV, ordinateur d'un ami) en l'approuvant depuis un téléphone déjà connecté. Aucun mot de passe à saisir.\n\nUne fois installé, ouvrez **/beam** sur le nouvel appareil, par exemple `https://votre-home-assistant/beam`, et ajoutez-le aux favoris."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "BeamIn est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options de BeamIn",
+        "data": {
+          "request_ttl": "Durée de validité du code",
+          "temporary_minutes": "Durée d'une session temporaire",
+          "public_url": "URL du QR code",
+          "show_in_sidebar": "Afficher BeamIn dans la barre latérale"
+        },
+        "data_description": {
+          "request_ttl": "Combien de temps un code reste valable sur l'écran de l'appareil.",
+          "temporary_minutes": "Une session temporaire est révoquée automatiquement après ce délai, même après un redémarrage.",
+          "public_url": "Adresse utilisée par votre téléphone pour joindre Home Assistant, par exemple https://ha.example.com. Laissez vide pour utiliser l'URL externe de Home Assistant.",
+          "show_in_sidebar": "Masqué, l'écran d'approbation reste accessible en scannant le QR code ou via /beamin."
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Saisissez une adresse comme https://ha.example.com, sans chemin."
+    }
+  }
+}

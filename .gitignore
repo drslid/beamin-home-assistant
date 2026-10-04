@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Local Home Assistant started by scripts/develop
+.dev/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store

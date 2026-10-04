@@ -1,0 +1,6 @@
+# Test harness for Home Assistant 2026.9.4, the minimum version declared in hacs.json.
+pytest-homeassistant-custom-component==0.13.367
+# The frontend integration (a dependency) needs its package; pinned by HA 2026.9.4.
+home-assistant-frontend==20260826.7
+# Mirrors the requirement in custom_components/beamin/manifest.json (the harness skips installs).
+segno==1.6.6

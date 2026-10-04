@@ -1,0 +1,90 @@
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "ASYNC",
+  "B",
+  "BLE",
+  "C4",
+  "D",
+  "DTZ",
+  "E",
+  "F",
+  "FLY",
+  "G",
+  "I",
+  "ICN",
+  "INP",
+  "LOG",
+  "N",
+  "PERF",
+  "PGH",
+  "PIE",
+  "PL",
+  "PT",
+  "PTH",
+  "RET",
+  "RSE",
+  "RUF",
+  "S",
+  "SIM",
+  "SLF",
+  "T20",
+  "TID",
+  "TRY",
+  "UP",
+  "W",
+]
+ignore = [
+  "D202",    # The formatter decides on blank lines after docstrings.
+  "PLR0913", # Home Assistant callbacks and fixtures take many arguments.
+  "TRY003",  # Errors carry machine-readable codes; messages stay short.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["INP001"]
+"tests/**" = ["PLR0915", "PLR0917", "PLR2004", "S101", "S105", "S106", "SLF001"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+known-first-party = ["custom_components.beamin"]
+split-on-trailing-comma = false
+
+[tool.mypy]
+python_version = "3.14"
+files = ["custom_components/beamin", "scripts"]
+explicit_package_bases = true
+strict = true
+warn_unreachable = true
+enable_error_code = [
+  "deprecated",
+  "ignore-without-code",
+  "redundant-self",
+  "truthy-iterable",
+]
+
+[[tool.mypy.overrides]]
+# The documented import path for HTTP helpers re-exports them without __all__.
+module = "homeassistant.components.http"
+implicit_reexport = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+source = ["custom_components/beamin"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:"]

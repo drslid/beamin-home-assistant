@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "BeamIn",
-        "description": "Sign in to Home Assistant on any device (car, wall tablet, TV, a friend's computer) by approving it from a phone that is already signed in. No password to type.\n\nAfter setup, open **/beam** on the new device, for example `https://your-home-assistant/beam`, and bookmark it."
+        "description": "Sign in to Home Assistant on any device (car, wall tablet, TV, a friend's computer) by approving it from a phone that is already signed in. No password to type.\n\nAfter setup, open **{beam_url}** on the new device and bookmark it."
       }
     },
     "abort": {
@@ -23,13 +23,13 @@
         "data_description": {
           "request_ttl": "How long a code stays valid on the device screen.",
           "temporary_minutes": "A temporary session is revoked automatically after this time, even across restarts.",
-          "public_url": "Address your phone uses to reach Home Assistant, such as https://ha.example.com. Leave empty to use the external URL of Home Assistant.",
+          "public_url": "Address your phone uses to reach Home Assistant, such as {example_url}. Leave empty to use the external URL of Home Assistant.",
           "show_in_sidebar": "When hidden, the approval screen stays reachable by scanning the QR code or at /beamin."
         }
       }
     },
     "error": {
-      "invalid_url": "Enter an address such as https://ha.example.com, without a path."
+      "invalid_url": "Enter an address such as {example_url}, without a path."
     }
   }
 }

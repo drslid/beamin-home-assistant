@@ -12,6 +12,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import callback
+from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.helpers.selector import (
     BooleanSelector,
     NumberSelector,
@@ -24,6 +25,7 @@ from homeassistant.helpers.selector import (
 import voluptuous as vol
 
 from .const import (
+    BEAM_PAGE_URL,
     CONF_PUBLIC_URL,
     CONF_REQUEST_TTL,
     CONF_SHOW_IN_SIDEBAR,
@@ -71,7 +73,14 @@ class BeamInConfigFlow(ConfigFlow, domain=DOMAIN):
         """Confirm the setup."""
         if user_input is not None:
             return self.async_create_entry(title=NAME, data={})
-        return self.async_show_form(step_id="user")
+        try:
+            base_url = get_url(self.hass, prefer_external=True)
+        except NoURLAvailableError:
+            base_url = "http://homeassistant.local:8123"
+        return self.async_show_form(
+            step_id="user",
+            description_placeholders={"beam_url": f"{base_url}{BEAM_PAGE_URL}"},
+        )
 
     @staticmethod
     @callback
@@ -145,4 +154,9 @@ class BeamInOptionsFlow(OptionsFlow):
         )
         if user_input is not None:
             schema = self.add_suggested_values_to_schema(schema, user_input)
-        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={"example_url": "https://ha.example.com"},
+        )

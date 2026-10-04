@@ -1,0 +1,50 @@
+blueprint:
+  name: Notify when a device signs in with BeamIn
+  description: >-
+    Sends a notification to your phone each time a device signs in to Home
+    Assistant with BeamIn, for example "Tesla browser signed in as Julien at
+    19:31". Tapping the notification opens Profile → Security, where the
+    session can be revoked.
+  domain: automation
+  author: drslid
+  homeassistant:
+    min_version: 2026.9.4
+  source_url: https://github.com/drslid/beamin-home-assistant/blob/main/blueprints/automation/beamin/notify_new_login.yaml
+  input:
+    notify_device:
+      name: Phone to notify
+      description: A phone running the Home Assistant Companion app.
+      selector:
+        device:
+          filter:
+            - integration: mobile_app
+    title:
+      name: Title
+      default: New BeamIn sign-in
+      selector:
+        text:
+
+mode: queued
+max: 10
+
+triggers:
+  - trigger: event
+    event_type: beamin_login_approved
+
+variables:
+  device_name: "{{ trigger.event.data.device }}"
+  user_name: "{{ trigger.event.data.target_user_name }}"
+  temporary: "{{ trigger.event.data.duration == 'temporary' }}"
+
+actions:
+  - domain: mobile_app
+    type: notify
+    device_id: !input notify_device
+    title: !input title
+    message: >-
+      {{ device_name }} signed in as {{ user_name }} at
+      {{ as_local(trigger.event.time_fired).strftime('%H:%M') }}{{ ' (temporary session)' if temporary else '' }}
+      from {{ trigger.event.data.ip }}. Tap to review or revoke.
+    data:
+      url: /profile/security
+      clickAction: /profile/security

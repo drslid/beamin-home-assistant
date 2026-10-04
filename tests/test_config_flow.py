@@ -9,6 +9,7 @@ from unittest.mock import patch
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers.network import NoURLAvailableError
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -42,6 +43,31 @@ async def test_user_flow_creates_single_entry(hass: HomeAssistant) -> None:
         )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "single_instance_allowed"
+
+
+async def test_user_flow_shows_this_instance_url(hass: HomeAssistant) -> None:
+    """The setup step shows the address to bookmark on the new device."""
+    await hass.config.async_update(external_url="https://home.example.net")
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    assert result["description_placeholders"] == {
+        "beam_url": "https://home.example.net/beam"
+    }
+
+
+async def test_user_flow_without_any_url(hass: HomeAssistant) -> None:
+    """Without a known URL, the setup step shows the usual local address."""
+    with patch(
+        "custom_components.beamin.config_flow.get_url",
+        side_effect=NoURLAvailableError,
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+    assert result["description_placeholders"] == {
+        "beam_url": "http://homeassistant.local:8123/beam"
+    }
 
 
 async def test_options_flow(hass: HomeAssistant, entry: MockConfigEntry) -> None:

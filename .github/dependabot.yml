@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Each harness release pins one Home Assistant version; bump it deliberately,
+      # together with the frontend package it requires.
+      - dependency-name: pytest-homeassistant-custom-component
+      - dependency-name: home-assistant-frontend

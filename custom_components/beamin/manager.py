@@ -47,6 +47,8 @@ from .const import (
     MATCH_MIN,
     MAX_PENDING_PER_IP,
     MAX_PENDING_TOTAL,
+    PAGE_RATE_LIMIT,
+    PAGE_RATE_WINDOW,
     PANEL_URL_PATH,
     POLL_RATE_LIMIT,
     POLL_RATE_WINDOW,
@@ -147,6 +149,7 @@ class BeamInManager:
         self.public_url = public_url
         self._requests: dict[str, BeamRequest] = {}
         self._codes: dict[str, str] = {}
+        self._page_limiter = SlidingWindowLimiter(PAGE_RATE_LIMIT, PAGE_RATE_WINDOW)
         self._create_limiter = SlidingWindowLimiter(
             CREATE_RATE_LIMIT, CREATE_RATE_WINDOW
         )
@@ -156,6 +159,14 @@ class BeamInManager:
         )
 
     # Requesting device (unauthenticated) -----------------------------------
+
+    @callback
+    def async_check_page_rate(self, ip: str) -> None:
+        """Rate limit the /beam page itself."""
+        if (wait := self._page_limiter.hit(ip_key(ip), time.time())) is not None:
+            raise BeamInError(
+                "rate_limited", HTTPStatus.TOO_MANY_REQUESTS, retry_after=wait
+            )
 
     @callback
     def async_create_request(

@@ -32,7 +32,7 @@ Only the latest release receives security fixes.
 | A temporary session turning permanent. | Temporary BeamIn sessions cannot approve other devices. Revocation is persisted before the tokens leave the server, rescheduled at startup (overdue ones are revoked immediately), and every temporary session is revoked when BeamIn is disabled or removed. |
 | Token leakage. | Tokens are only in POST response bodies with `Cache-Control: no-store`, never in URLs, never logged, never in events or diagnostics. Diagnostics contain counters and redacted options only. |
 | Cross-site scripting on `/beam` or through a crafted User-Agent. | A strict Content-Security-Policy without inline scripts (`default-src 'none'; script-src 'self'; …`); all dynamic values are inserted with `textContent`; the device description is mapped to a fixed vocabulary (raw User-Agent text is never displayed or logged). |
-| Denial of service by flooding requests. | Per-address rate limits (IPv6 grouped per /64), 3 waiting requests per address and 10 overall, bounded memory. Residual risk accepted: an attacker with many addresses can make BeamIn temporarily unavailable; regular login keeps working. |
+| Denial of service by flooding requests. | Per-address rate limits on the page, request creation and polling (IPv6 grouped per /64), 3 waiting requests per address and 10 overall, bounded memory. Residual risk accepted: an attacker with many addresses can make BeamIn temporarily unavailable; regular login keeps working. |
 
 ## Design choices
 

@@ -237,8 +237,10 @@ class BeamPageView(BeamInView):
 
     async def get(self, request: web.Request) -> web.Response:
         """Return the sign-in page."""
-        if self.hass.data.get(DATA_MANAGER) is None:
-            return web.Response(status=HTTPStatus.NOT_FOUND, headers=NO_STORE)
+        try:
+            self.manager().async_check_page_rate(request.remote or "")
+        except BeamInError as err:
+            return await self.error(request, err)
         return web.Response(
             text=self._html,
             content_type="text/html",

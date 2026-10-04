@@ -490,6 +490,17 @@ async def test_poll_rate_limit(hass: HomeAssistant, client: TestClient) -> None:
     assert statuses[120] == 429
 
 
+async def test_page_rate_limit(hass: HomeAssistant, client: TestClient) -> None:
+    """The /beam page is rate limited per address too."""
+    statuses = [
+        (await client.get("/beam", headers=headers(DEVICE_IP))).status
+        for _ in range(31)
+    ]
+    assert statuses[:30] == [200] * 30
+    assert statuses[30] == 429
+    assert (await client.get("/beam", headers=headers(PHONE_IP))).status == 200
+
+
 @pytest.mark.parametrize(
     ("client_id", "origin"),
     [

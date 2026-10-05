@@ -65,6 +65,12 @@ const STYLE = `
   h2 { margin: 0 0 12px; font-size: 22px; font-weight: 500; outline: none; }
   p { margin: 8px 0; }
   .muted { color: var(--secondary-text-color); }
+  .address {
+    margin: 4px 0 8px;
+    font-family: "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: 20px; font-weight: 500; line-height: 1.4;
+    overflow-wrap: anywhere; -webkit-user-select: all; user-select: all;
+  }
   label { display: block; margin: 16px 0 6px; font-weight: 500; }
   input[type="text"], select {
     width: 100%; box-sizing: border-box; padding: 12px;
@@ -151,6 +157,7 @@ class BeamInPanel extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._step = "enter";
     this._code = "";
+    this._deviceUrl = "";
     this._error = "";
     this._busy = false;
     this._ticker = null;
@@ -175,6 +182,14 @@ class BeamInPanel extends HTMLElement {
     this._narrow = narrow;
     const menu = this.shadowRoot.querySelector(".menu");
     if (menu) menu.hidden = !narrow;
+  }
+
+  // The "Address to type on the device" option arrives in the panel config.
+  set panel(panel) {
+    const deviceUrl = panel?.config?.device_url || "";
+    if (deviceUrl === this._deviceUrl) return;
+    this._deviceUrl = deviceUrl;
+    if (this._hass && this._step === "enter") this._render();
   }
 
   disconnectedCallback() {
@@ -256,7 +271,8 @@ class BeamInPanel extends HTMLElement {
     });
     return element("div", { className: "card" }, [
       element("h2", { text: t("enter_title"), tabIndex: -1 }),
-      element("p", { className: "muted", text: t("enter_help", { url: `${location.origin}/beam` }) }),
+      element("p", { className: "muted", text: t("enter_help") }),
+      element("div", { className: "address", text: this._deviceUrl || `${location.origin}/beam` }),
       element("label", { for: "code", text: t("code_input") }),
       input,
       this._error ? element("div", { className: "callout error", role: "alert", text: this._error }) : null,

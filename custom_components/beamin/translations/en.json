@@ -18,18 +18,21 @@
           "request_ttl": "Code lifetime",
           "temporary_minutes": "Temporary session duration",
           "public_url": "URL in the QR code",
+          "device_url": "Address to type on the device",
           "show_in_sidebar": "Show BeamIn in the sidebar"
         },
         "data_description": {
           "request_ttl": "How long a code stays valid on the device screen.",
           "temporary_minutes": "A temporary session is revoked automatically after this time, even across restarts.",
           "public_url": "Address your phone uses to reach Home Assistant, such as {example_url}. Leave empty to use the external URL of Home Assistant.",
+          "device_url": "Shown as entered in the BeamIn panel instead of the full address, for example your own domain or a short link to /beam such as {device_example}. Leave empty to show the address you are using.",
           "show_in_sidebar": "When hidden, the approval screen stays reachable by scanning the QR code or at /beamin."
         }
       }
     },
     "error": {
-      "invalid_url": "Enter an address such as {example_url}, without a path."
+      "invalid_url": "Enter an address such as {example_url}, without a path.",
+      "invalid_device_url": "Enter a web address such as {device_example}."
     }
   }
 }

@@ -16,10 +16,12 @@ NAME: Final = "BeamIn"
 # Present only while the config entry is loaded; the views answer 404 otherwise.
 DATA_MANAGER: HassKey[BeamInManager] = HassKey(DOMAIN)
 DATA_SESSIONS: HassKey[TemporarySessions] = HassKey(f"{DOMAIN}_sessions")
+DATA_STATIC_URL: HassKey[str] = HassKey(f"{DOMAIN}_static_url")
 
 CONF_REQUEST_TTL: Final = "request_ttl"
 CONF_TEMPORARY_MINUTES: Final = "temporary_minutes"
 CONF_PUBLIC_URL: Final = "public_url"
+CONF_DEVICE_URL: Final = "device_url"
 CONF_SHOW_IN_SIDEBAR: Final = "show_in_sidebar"
 
 DEFAULT_REQUEST_TTL: Final = 120

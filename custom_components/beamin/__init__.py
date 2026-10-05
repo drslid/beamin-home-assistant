@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 from homeassistant.components import frontend, panel_custom
@@ -15,12 +16,14 @@ from homeassistant.loader import async_get_integration
 
 from .auth_helpers import TemporarySessions
 from .const import (
+    CONF_DEVICE_URL,
     CONF_PUBLIC_URL,
     CONF_REQUEST_TTL,
     CONF_SHOW_IN_SIDEBAR,
     CONF_TEMPORARY_MINUTES,
     DATA_MANAGER,
     DATA_SESSIONS,
+    DATA_STATIC_URL,
     DEFAULT_REQUEST_TTL,
     DEFAULT_SHOW_IN_SIDEBAR,
     DEFAULT_TEMPORARY_MINUTES,
@@ -47,12 +50,14 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 
 
-def _render_page(static_url: str) -> str:
-    return (
-        (FRONTEND_DIR / "beam.html")
-        .read_text(encoding="utf-8")
-        .replace("__STATIC__", static_url)
-    )
+def _load_frontend() -> tuple[str, str]:
+    """Return the /beam page template and a fingerprint of the frontend files."""
+    digest = hashlib.sha256()
+    for path in sorted(p for p in FRONTEND_DIR.iterdir() if p.is_file()):
+        digest.update(path.name.encode())
+        digest.update(path.read_bytes())
+    template = (FRONTEND_DIR / "beam.html").read_text(encoding="utf-8")
+    return template, digest.hexdigest()[:12]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -63,13 +68,17 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     never delays it.
     """
     integration = await async_get_integration(hass, DOMAIN)
-    # A versioned path lets browsers cache the files and still get updates.
-    static_url = f"{STATIC_URL}/{integration.version}"
-    html = await hass.async_add_executor_job(_render_page, static_url)
+    template, fingerprint = await hass.async_add_executor_job(_load_frontend)
+    # The path changes with the files: browsers cache them for a month and
+    # still get updates, even from an unreleased version.
+    static_url = f"{STATIC_URL}/{integration.version}-{fingerprint}"
     await hass.http.async_register_static_paths(
         [StaticPathConfig(static_url, str(FRONTEND_DIR), cache_headers=True)]
     )
-    hass.http.register_view(BeamPageView(hass, html))
+    hass.data[DATA_STATIC_URL] = static_url
+    hass.http.register_view(
+        BeamPageView(hass, template.replace("__STATIC__", static_url))
+    )
     for view in (RequestView, PollView, PendingView, ApproveView, DenyView):
         hass.http.register_view(view(hass))
 
@@ -95,7 +104,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: BeamInConfigEntry) -> bo
     entry.runtime_data = manager
     hass.data[DATA_MANAGER] = manager
 
-    integration = await async_get_integration(hass, DOMAIN)
     show = options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR)
     await panel_custom.async_register_panel(
         hass,
@@ -104,7 +112,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: BeamInConfigEntry) -> bo
         # Without a title the panel leaves the sidebar but stays reachable by URL.
         sidebar_title=NAME if show else None,
         sidebar_icon=PANEL_ICON if show else None,
-        module_url=f"{STATIC_URL}/{integration.version}/beamin-panel.js",
+        module_url=f"{hass.data[DATA_STATIC_URL]}/beamin-panel.js",
+        config={CONF_DEVICE_URL: options.get(CONF_DEVICE_URL, "")},
         require_admin=False,
     )
     entry.async_on_unload(entry.add_update_listener(_async_reload))

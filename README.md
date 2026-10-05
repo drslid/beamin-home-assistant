@@ -30,7 +30,7 @@ Requires Home Assistant **2026.9.4** or newer.
 
 ## 📲 Usage
 
-On the device to sign in, type **`your-home-assistant/beam`** (for example `https://ha.example.com/beam`) and **bookmark it**.
+On the device to sign in, type **`your-home-assistant/beam`** (for example `https://ha.example.com/beam`) and **bookmark it**. The BeamIn panel shows this address; to type less in a car, see **A shorter address for the car** below.
 
 1. The device shows a QR code, a code such as `K7F-29X` and a big matching number.
 2. On your phone, scan the QR code: it opens the **BeamIn** panel of Home Assistant. You can also open BeamIn from the sidebar and type the code.
@@ -61,7 +61,21 @@ An `https://` link works with every camera app on iOS and Android, locally or re
 | Code lifetime | 120 s | How long a code stays valid (60–300 s). |
 | Temporary session duration | 60 min | Lifetime of a "Temporary" session (5–1440 min). |
 | URL in the QR code | Home Assistant's URL | Address your phone uses, such as `https://ha.example.com`. |
+| Address to type on the device | The address in use | Shown in the panel instead of the full address, such as `ha.example.com/beam` or a short link to `/beam`. |
 | Show BeamIn in the sidebar | On | When hidden, the panel stays reachable through the QR link or `/beamin`. |
+
+## 📏 A shorter address for the car
+
+With Home Assistant Cloud, the address to type looks like `https://abcd1234-ef56-7890-abcd-ef1234567890.ui.nabu.casa/beam`: about 60 characters on a touchscreen keyboard. The long part is the host name, which BeamIn cannot shorten. You can:
+
+- **Use your own domain** (recommended): Home Assistant Cloud can also answer on a subdomain you own, such as `ha.example.com`, with two DNS records ([Nabu Casa guide](https://support.nabucasa.com/hc/en-us/articles/26497540527517-Using-remote-access-with-a-custom-domain-for-Home-Assistant)). You then type `ha.example.com/beam`, with no third party involved.
+- **Create a permanent short link**: on [tinyurl.com](https://tinyurl.com), without an account, shorten your full `/beam` address with an alias of your choice, such as `tinyurl.com/ha-home`. Nobody can change where a link created without an account leads, not even you, but TinyURL sees each visit and you trust it with the redirect.
+
+Then enter that address in the options under **Address to type on the device**: the BeamIn panel shows it instead of the full one. On a device that is already signed in, the same address goes straight to the dashboard. Approve the car with **This device**: it stays signed in as long as it is used at least once every 90 days, so you rarely type the address at all.
+
+Avoid links that someone could change later, such as a shortener account or a domain you might let expire: whoever controls the redirect can send the car to a fake page that shows someone else's code. The approval screen would give it away, because the device, IP address and network would not match the car in front of you.
+
+Why not a link that expires after a few minutes? At TinyURL and most shorteners, expiring or deleting links is a paid feature, and BeamIn would have to call an internet service. It would add little security: the Home Assistant Cloud address is already public (its Let's Encrypt certificate is listed in public Certificate Transparency logs), `/beam` grants nothing without your approval, and the redirect must be trusted while the link is valid anyway.
 
 ## 🔐 How it works and why it is safe
 

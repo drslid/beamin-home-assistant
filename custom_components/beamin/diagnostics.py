@@ -8,7 +8,7 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.core import HomeAssistant
 
 from . import BeamInConfigEntry
-from .const import CONF_PUBLIC_URL
+from .const import CONF_DEVICE_URL, CONF_PUBLIC_URL
 
 
 async def async_get_config_entry_diagnostics(
@@ -16,6 +16,8 @@ async def async_get_config_entry_diagnostics(
 ) -> dict[str, Any]:
     """Return diagnostics for the config entry."""
     return {
-        "options": async_redact_data(dict(entry.options), {CONF_PUBLIC_URL}),
+        "options": async_redact_data(
+            dict(entry.options), {CONF_PUBLIC_URL, CONF_DEVICE_URL}
+        ),
         "state": entry.runtime_data.diagnostics(),
     }

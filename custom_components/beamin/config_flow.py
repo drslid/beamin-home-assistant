@@ -26,6 +26,7 @@ import voluptuous as vol
 
 from .const import (
     BEAM_PAGE_URL,
+    CONF_DEVICE_URL,
     CONF_PUBLIC_URL,
     CONF_REQUEST_TTL,
     CONF_SHOW_IN_SIDEBAR,
@@ -40,6 +41,12 @@ from .const import (
     MIN_TEMPORARY_MINUTES,
     NAME,
 )
+
+MAX_DEVICE_URL_LENGTH = 255
+PLACEHOLDERS = {
+    "example_url": "https://ha.example.com",
+    "device_example": "ha.example.com/beam",
+}
 
 
 def normalize_public_url(value: str) -> str | None:
@@ -60,6 +67,31 @@ def normalize_public_url(value: str) -> str | None:
     ):
         return None
     return f"{parts.scheme}://{parts.netloc.lower()}"
+
+
+def normalize_device_url(value: str) -> str | None:
+    """Return the address to show for devices as entered, or None if invalid.
+
+    It is only displayed, so the scheme may be left out as people type it.
+    """
+    text = value.strip()
+    if len(text) > MAX_DEVICE_URL_LENGTH or any(char.isspace() for char in text):
+        return None
+    try:
+        parts = urlsplit(text if "://" in text else f"https://{text}")
+        _ = parts.port
+    except ValueError:
+        return None
+    if (
+        parts.scheme not in ("http", "https")
+        or not parts.hostname
+        or parts.username is not None
+        or parts.password is not None
+        or parts.query
+        or parts.fragment
+    ):
+        return None
+    return text
 
 
 class BeamInConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -103,12 +135,18 @@ class BeamInOptionsFlow(OptionsFlow):
                 public_url = normalize_public_url(raw_url) or ""
                 if not public_url:
                     errors[CONF_PUBLIC_URL] = "invalid_url"
+            device_url = ""
+            if raw_device_url := str(user_input.get(CONF_DEVICE_URL) or "").strip():
+                device_url = normalize_device_url(raw_device_url) or ""
+                if not device_url:
+                    errors[CONF_DEVICE_URL] = "invalid_device_url"
             if not errors:
                 return self.async_create_entry(
                     data={
                         CONF_REQUEST_TTL: int(user_input[CONF_REQUEST_TTL]),
                         CONF_TEMPORARY_MINUTES: int(user_input[CONF_TEMPORARY_MINUTES]),
                         CONF_PUBLIC_URL: public_url,
+                        CONF_DEVICE_URL: device_url,
                         CONF_SHOW_IN_SIDEBAR: bool(user_input[CONF_SHOW_IN_SIDEBAR]),
                     }
                 )
@@ -146,6 +184,10 @@ class BeamInOptionsFlow(OptionsFlow):
                     CONF_PUBLIC_URL,
                     description={"suggested_value": options.get(CONF_PUBLIC_URL, "")},
                 ): TextSelector(TextSelectorConfig(type=TextSelectorType.URL)),
+                vol.Optional(
+                    CONF_DEVICE_URL,
+                    description={"suggested_value": options.get(CONF_DEVICE_URL, "")},
+                ): TextSelector(),
                 vol.Required(
                     CONF_SHOW_IN_SIDEBAR,
                     default=options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR),
@@ -158,5 +200,5 @@ class BeamInOptionsFlow(OptionsFlow):
             step_id="init",
             data_schema=schema,
             errors=errors,
-            description_placeholders={"example_url": "https://ha.example.com"},
+            description_placeholders=PLACEHOLDERS,
         )

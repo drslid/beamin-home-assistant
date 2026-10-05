@@ -35,7 +35,7 @@
       // Panel
       menu: "Menu",
       enter_title: "Approve a sign-in",
-      enter_help: "On the device to sign in, open {url} and type the code it shows.",
+      enter_help: "On the device to sign in, open:",
       code_input: "Code shown on the device",
       continue: "Continue",
       invalid_format: "A code has 6 letters or digits, like K7F-29X.",
@@ -116,7 +116,7 @@
 
       menu: "Menu",
       enter_title: "Approuver une connexion",
-      enter_help: "Sur l'appareil à connecter, ouvrez {url} puis saisissez le code affiché.",
+      enter_help: "Sur l'appareil à connecter, ouvrez :",
       code_input: "Code affiché sur l'appareil",
       continue: "Continuer",
       invalid_format: "Un code comporte 6 lettres ou chiffres, par exemple K7F-29X.",

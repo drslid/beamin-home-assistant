@@ -13,8 +13,12 @@ from homeassistant.helpers.network import NoURLAvailableError
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.beamin.config_flow import normalize_public_url
+from custom_components.beamin.config_flow import (
+    normalize_device_url,
+    normalize_public_url,
+)
 from custom_components.beamin.const import (
+    CONF_DEVICE_URL,
     CONF_PUBLIC_URL,
     CONF_REQUEST_TTL,
     CONF_SHOW_IN_SIDEBAR,
@@ -96,8 +100,36 @@ async def test_options_flow(hass: HomeAssistant, entry: MockConfigEntry) -> None
         CONF_REQUEST_TTL: 90,
         CONF_TEMPORARY_MINUTES: 30,
         CONF_PUBLIC_URL: "https://ha.example.com:8443",
+        CONF_DEVICE_URL: "",
         CONF_SHOW_IN_SIDEBAR: False,
     }
+
+
+async def test_options_flow_device_url(
+    hass: HomeAssistant, entry: MockConfigEntry
+) -> None:
+    """The address to type on devices is checked, then kept as entered."""
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    user_input = {
+        CONF_REQUEST_TTL: 120,
+        CONF_TEMPORARY_MINUTES: 60,
+        CONF_DEVICE_URL: "go example.com",
+        CONF_SHOW_IN_SIDEBAR: True,
+    }
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {CONF_DEVICE_URL: "invalid_device_url"}
+    assert result["description_placeholders"]["device_example"]
+
+    user_input[CONF_DEVICE_URL] = " tinyurl.com/ha-home "
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_DEVICE_URL] == "tinyurl.com/ha-home"
+    assert entry.options[CONF_PUBLIC_URL] == ""
 
 
 async def test_options_flow_clears_url(
@@ -111,6 +143,7 @@ async def test_options_flow_clears_url(
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert entry.options[CONF_PUBLIC_URL] == ""
+    assert entry.options[CONF_DEVICE_URL] == ""
 
 
 @pytest.mark.parametrize(
@@ -129,6 +162,30 @@ async def test_options_flow_clears_url(
 def test_normalize_public_url(value: str, expected: str | None) -> None:
     """Only bare http(s) origins are accepted."""
     assert normalize_public_url(value) == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("ha.example.com/beam", "ha.example.com/beam"),
+        (" tinyurl.com/ha-home ", "tinyurl.com/ha-home"),
+        ("https://Go.Example.com", "https://Go.Example.com"),
+        ("http://192.168.1.2:8123/beam", "http://192.168.1.2:8123/beam"),
+        ("go example.com", None),
+        ("ftp://ha.example.com", None),
+        ("https://user@ha.example.com", None),
+        ("ha.example.com/beam?a=1", None),
+        ("ha.example.com/#top", None),
+        ("ha.example.com:port", None),
+        ("javascript:alert(1)", None),
+        ("//ha.example.com", None),
+        ("https://", None),
+        (f"ha.example.com/{'b' * 255}", None),
+    ],
+)
+def test_normalize_device_url(value: str, expected: str | None) -> None:
+    """Web addresses are kept as typed, with or without a scheme."""
+    assert normalize_device_url(value) == expected
 
 
 def test_translations_match() -> None:

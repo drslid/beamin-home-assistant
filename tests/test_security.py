@@ -23,7 +23,12 @@ from pytest_homeassistant_custom_component.components.diagnostics import (
 from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 
 from custom_components.beamin import manager as manager_module
-from custom_components.beamin.const import EVENT_DENIED, EVENT_EXPIRED
+from custom_components.beamin.const import (
+    CONF_DEVICE_URL,
+    CONF_PUBLIC_URL,
+    EVENT_DENIED,
+    EVENT_EXPIRED,
+)
 
 from .common import (
     ATTACKER_IP,
@@ -606,6 +611,10 @@ async def test_page_and_api_headers(hass: HomeAssistant, client: TestClient) -> 
     assert response.headers["Cache-Control"] == "no-store"
 
 
+@pytest.mark.parametrize(
+    "options",
+    [{CONF_PUBLIC_URL: "https://qr.example.org", CONF_DEVICE_URL: "go.example.org"}],
+)
 async def test_secrets_never_logged_or_in_diagnostics(
     hass: HomeAssistant,
     client: TestClient,
@@ -650,6 +659,8 @@ async def test_secrets_never_logged_or_in_diagnostics(
         waiting["code"].replace("-", ""),
         DEVICE_IP,
         "192.168.1.9",
+        "qr.example.org",
+        "go.example.org",
     ):
         assert value not in dump
     assert diagnostics["state"]["requests"] == {"approved": 1, "pending": 1}

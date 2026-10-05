@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+import re
 from unittest.mock import patch
 
 from aiohttp.test_utils import TestClient
@@ -11,35 +13,53 @@ from homeassistant.helpers import network
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry, MockUser
 
+from custom_components import beamin
 from custom_components.beamin.const import (
+    CONF_DEVICE_URL,
     CONF_PUBLIC_URL,
     CONF_SHOW_IN_SIDEBAR,
     DATA_MANAGER,
+    DATA_STATIC_URL,
 )
 from custom_components.beamin.views import make_qr_svg
 
 from .common import PHONE_IP, access_token, create, create_ok, headers, pending
-
-STATIC = "/beamin_static/0.1.0"
 
 
 async def test_panel_and_static_files(
     hass: HomeAssistant, client: TestClient, entry: MockConfigEntry
 ) -> None:
     """The panel is in the sidebar for everyone; files come from a versioned path."""
+    static = hass.data[DATA_STATIC_URL]
+    assert re.fullmatch(r"/beamin_static/0\.1\.0-[0-9a-f]{12}", static)
     panel = hass.data[DATA_PANELS]["beamin"]
     assert panel.sidebar_title == "BeamIn"
     assert panel.sidebar_icon == "mdi:qrcode-scan"
     assert panel.require_admin is False
-    assert panel.config["_panel_custom"]["module_url"] == f"{STATIC}/beamin-panel.js"
+    assert panel.config["_panel_custom"]["module_url"] == f"{static}/beamin-panel.js"
+    assert panel.config[CONF_DEVICE_URL] == ""
 
     html = await (await client.get("/beam")).text()
-    assert f'src="{STATIC}/beam.js"' in html
-    assert f'href="{STATIC}/beam.css"' in html
+    assert f'src="{static}/beam.js"' in html
+    assert f'href="{static}/beam.css"' in html
     assert "__STATIC__" not in html
     for name in ("beam.js", "beam.css", "i18n.js", "beamin-panel.js"):
-        response = await client.get(f"{STATIC}/{name}")
+        response = await client.get(f"{static}/{name}")
         assert response.status == 200, name
+
+
+def test_static_path_changes_with_the_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Editing a frontend file changes the path, so no browser keeps the old one."""
+    (tmp_path / "beam.html").write_text("__STATIC__", encoding="utf-8")
+    (tmp_path / "beam.js").write_text("one", encoding="utf-8")
+    monkeypatch.setattr(beamin, "FRONTEND_DIR", tmp_path)
+    template, first = beamin._load_frontend()
+    assert template == "__STATIC__"
+    assert beamin._load_frontend()[1] == first
+    (tmp_path / "beam.js").write_text("two", encoding="utf-8")
+    assert beamin._load_frontend()[1] != first
 
 
 @pytest.mark.parametrize("options", [{CONF_SHOW_IN_SIDEBAR: False}])
@@ -78,10 +98,16 @@ async def test_options_update_reloads(
     """Changing options reloads the entry with the new settings."""
     hass.config_entries.async_update_entry(
         entry,
-        options={CONF_SHOW_IN_SIDEBAR: False, CONF_PUBLIC_URL: "https://x.example"},
+        options={
+            CONF_SHOW_IN_SIDEBAR: False,
+            CONF_PUBLIC_URL: "https://x.example",
+            CONF_DEVICE_URL: "go.example.com",
+        },
     )
     await hass.async_block_till_done()
-    assert hass.data[DATA_PANELS]["beamin"].sidebar_title is None
+    panel = hass.data[DATA_PANELS]["beamin"]
+    assert panel.sidebar_title is None
+    assert panel.config[CONF_DEVICE_URL] == "go.example.com"
     assert hass.data[DATA_MANAGER].public_url == "https://x.example"
 
 

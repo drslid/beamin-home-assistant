@@ -2,8 +2,11 @@
 
 BeamIn brings **Home Assistant login without password** to every screen that is not signed in yet. Open `/beam` on the device, scan the **QR code login** screen with the phone you already use for Home Assistant, pick the matching number, tap **Approve**: the device lands on your dashboard. It is made for the **Tesla browser** and other car screens, a **wall tablet** or **kiosk**, a **TV**, a friend's computer — anywhere typing a long password is a pain. The same experience as "Sign in to Netflix on your TV", fully local, with no cloud service and nothing to configure.
 
-> 🎬 **Demo (10 seconds):** the car browser shows a code → the phone scans it and approves → the car shows the dashboard.
-> _Demo GIF coming soon._
+<p align="center">
+  <img src="https://raw.githubusercontent.com/drslid/beamin-home-assistant/main/docs/assets/device.webp" alt="BeamIn sign-in screen on a car browser: a QR code, the code SW9-6GG and the number 46 to pick on the phone" width="620">
+  <img src="https://raw.githubusercontent.com/drslid/beamin-home-assistant/main/docs/assets/phone.webp" alt="Approval on the phone: Tesla browser on the local network, number 46 selected, session for this device, Approve button" width="179">
+  <br><sub>The car browser shows a code; the phone checks the device, picks the matching number and approves. The car then lands on the dashboard.</sub>
+</p>
 
 [![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=drslid&repository=beamin-home-assistant&category=integration)
 [![Open your Home Assistant instance and start setting up BeamIn.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=beamin)
